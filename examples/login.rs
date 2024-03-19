@@ -9,7 +9,7 @@ use serde::Deserialize;
 async fn main() {
     let mut api = Api::new();
     api.set_proxy(Some(Proxy::all("http://localhost:15777").unwrap())).unwrap();
-    api.login("yinpeach", "20050314yjc.").await.unwrap();
+    api.login("", "").await.unwrap();
     let mut v = api.favorites(1, Sort::DescByDate).await.unwrap();
     println!("v {:#?}", v);
 }
