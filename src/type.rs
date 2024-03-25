@@ -351,7 +351,7 @@ pub mod responses {
         #[serde(rename = "_id")]
         pub id: String,
         pub birthday: String,
-        pub character: String,
+        pub character: Option<String>,
         pub characters: Vec<String>,
         pub created_at: String,
         pub email: String,
