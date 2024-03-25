@@ -254,7 +254,15 @@ impl Api {
         let res = self.client.read().unwrap().execute(req).await?;
         let text = res.text().await?;
         println!("Parsing {}", &text);
-        Ok(serde_json::from_str(&text)?)
+        Ok(serde_json::from_str::<Response<T>>(&text)
+            .map(|response| {
+                if response.is_success() {
+                    Ok::<T, Error>(response.data.unwrap())
+                } else {
+                    Err(response.into())
+                }
+            })??
+            )
     }
     */
 

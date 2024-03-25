@@ -10,7 +10,7 @@ pub type ApiResult<T> = Result<T, Error>;
 pub use crate::api_type::*;
 use crate::error::Error;
 
-use crate::r#impl::game_download_info_deserializer;
+use crate::r#impl::{game_download_info_deserializer, num_correct_deserializer};
 
 pub mod app {
     pub const VERSION: &'static str = "2.2.1.3.3.4";
@@ -91,6 +91,7 @@ pub enum Sort {
 
 #[derive(Debug, Deserialize)]
 pub struct Response<T: Debug> {
+    #[serde(deserialize_with="num_correct_deserializer")]
     pub code: u64,
     pub message: String,
     pub(super) error: Option<String>,
@@ -151,8 +152,10 @@ pub mod responses {
         pub avatar: Option<PictureDownloadResounce>,
         pub character: Option<String>,
         pub characters: Vec<String>,
+        #[serde(deserialize_with="num_correct_deserializer")]
         pub exp: u64,
         pub gender: String,
+        #[serde(deserialize_with="num_correct_deserializer")]
         pub level: u64,
         pub name: String,
         #[serde(default)]
@@ -202,9 +205,9 @@ pub mod responses {
         pub is_favourite: bool,
         #[serde(rename = "isLiked")]
         pub is_liked: bool,
-        #[serde(rename = "likesCount", default)]
+        #[serde(rename = "likesCount", default, deserialize_with="num_correct_deserializer")]
         pub likes_count: u64,
-        #[serde(rename = "totalComments", default)]
+        #[serde(rename = "totalComments", default, deserialize_with="num_correct_deserializer")]
         pub total_comments: u64,
     }
 
@@ -306,22 +309,22 @@ pub mod responses {
         pub author: String,
         pub categories: Vec<String>,
         pub title: String,
-        #[serde(rename = "totalViews", default)]
+        #[serde(rename = "totalViews", default, deserialize_with="num_correct_deserializer")]
         pub total_views: u64,
-        #[serde(rename = "totalLikes", default)]
+        #[serde(rename = "totalLikes", default, deserialize_with="num_correct_deserializer")]
         pub total_likes: u64,
-        #[serde(rename = "likesCount", default)]
+        #[serde(rename = "likesCount", default, deserialize_with="num_correct_deserializer")]
         pub likes_count: u64,
-        #[serde(rename = "pagesCount", default)]
+        #[serde(rename = "pagesCount", default, deserialize_with="num_correct_deserializer")]
         pub pages_count: u64,
-        #[serde(rename = "epsCount", default)]
+        #[serde(rename = "epsCount", default, deserialize_with="num_correct_deserializer")]
         pub eps_count: u64,
         #[serde(default)]
         pub finished: bool,
         pub thumb: PictureDownloadResounce,
-        #[serde(rename = "viewsCount", default)]
+        #[serde(rename = "viewsCount", default, deserialize_with="num_correct_deserializer")]
         pub views_count: u64,
-        #[serde(rename = "leaderboardCount", default)]
+        #[serde(rename = "leaderboardCount", default, deserialize_with="num_correct_deserializer")]
         pub leader_board_count: u64,
     }
 
@@ -352,10 +355,12 @@ pub mod responses {
         pub characters: Vec<String>,
         pub created_at: String,
         pub email: String,
+        #[serde(deserialize_with="num_correct_deserializer")]
         pub exp: u64,
         pub gender: String,
         #[serde(rename = "isPunched")]
         pub is_punched: bool,
+        #[serde(deserialize_with="num_correct_deserializer")]
         pub level: u64,
         pub name: String,
         pub title: String,
@@ -456,9 +461,13 @@ pub mod responses {
     #[derive(Debug, Deserialize)]
     pub struct Docs<T> {
         docs: Vec<T>,
+        #[serde(deserialize_with="num_correct_deserializer")]
         pub limit: u64,
+        #[serde(deserialize_with="num_correct_deserializer")]
         pub page: u64,
+        #[serde(deserialize_with="num_correct_deserializer")]
         pub pages: u64,
+        #[serde(deserialize_with="num_correct_deserializer")]
         pub total: u64,
     }
 
@@ -477,7 +486,7 @@ pub mod responses {
 
     #[derive(Debug, Deserialize)]
     pub struct Comments<T> {
-        comments: CorrectPageDocs<T>,
+        comments: Docs<T>,
         #[serde(rename = "topComments")]
         pub top_comments: Option<Vec<T>>,
         /*
@@ -488,7 +497,7 @@ pub mod responses {
         */
     }
     impl<T> Deref for Comments<T> {
-        type Target = CorrectPageDocs<T>;
+        type Target = Docs<T>;
         fn deref(&self) -> &Self::Target {
             &self.comments
         }
@@ -500,37 +509,6 @@ pub mod responses {
         }
     }
 
-    pub fn correct_page<'de, D>(deserializer: D) -> Result<u64, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let data = String::deserialize(deserializer)?;
-        Ok(data.parse().unwrap())
-    }
-
-    #[derive(Debug, Deserialize)]
-    pub struct CorrectPageDocs<T> {
-        docs: Vec<T>,
-        pub limit: u64,
-        #[serde(deserialize_with = "correct_page")]
-        pub page: u64,
-        pub pages: u64,
-        pub total: u64,
-    }
-
-    impl<T> Deref for CorrectPageDocs<T> {
-        type Target = Vec<T>;
-        fn deref(&self) -> &Self::Target {
-            &self.docs
-        }
-    }
-
-    impl<T> DerefMut for CorrectPageDocs<T> {
-        fn deref_mut(&mut self) -> &mut Self::Target {
-            &mut self.docs
-        }
-    }
-
     #[derive(Debug, Deserialize)]
     pub struct ComicComment {
         #[serde(rename = "_comic")]
@@ -539,7 +517,7 @@ pub mod responses {
         pub id: String,
         #[serde(rename = "_user")]
         pub user: Creator,
-        #[serde(rename = "commentsCount")]
+        #[serde(rename = "commentsCount", deserialize_with="num_correct_deserializer")]
         pub comments_count: u64,
         #[serde(default)]
         pub content: String,
@@ -549,9 +527,9 @@ pub mod responses {
         pub is_liked: bool,
         #[serde(rename = "isTop")]
         pub is_top: bool,
-        #[serde(rename = "likesCount")]
+        #[serde(rename = "likesCount", deserialize_with="num_correct_deserializer")]
         pub likes_count: u64,
-        #[serde(rename = "totalComments")]
+        #[serde(rename = "totalComments", deserialize_with="num_correct_deserializer")]
         pub total_comments: u64,
     }
 
@@ -659,15 +637,15 @@ pub mod responses {
         pub ios_links: Vec<String>,
         #[serde(rename = "iosSize")]
         pub ios_size: Size,
-        #[serde(rename = "commentsCount")]
+        #[serde(rename = "commentsCount", deserialize_with="num_correct_deserializer")]
         pub comments_count: u64,
         pub created_at: String,
         pub description: Option<String>,
-        #[serde(rename = "downloadsCount")]
+        #[serde(rename = "downloadsCount", deserialize_with="num_correct_deserializer")]
         pub downloads_count: u64,
         #[serde(rename = "isLiked")]
         pub is_liked: bool,
-        #[serde(rename = "likesCount")]
+        #[serde(rename = "likesCount", deserialize_with="num_correct_deserializer")]
         pub likes_count: u64,
         pub screenshots: Vec<PictureDownloadResounce>,
         pub updated_at: String,
@@ -696,7 +674,7 @@ pub mod responses {
         pub id: String,
         #[serde(rename = "_user")]
         pub user: Creator,
-        #[serde(rename = "commentsCount")]
+        #[serde(rename = "commentsCount", deserialize_with="num_correct_deserializer")]
         pub comments_count: u64,
         pub content: String,
         pub created_at: String,
@@ -706,9 +684,9 @@ pub mod responses {
         pub is_liked: bool,
         #[serde(rename = "isTop")]
         pub is_top: bool,
-        #[serde(rename = "likesCount")]
+        #[serde(rename = "likesCount", deserialize_with="num_correct_deserializer")]
         pub likes_count: u64,
-        #[serde(rename = "totalComments")]
+        #[serde(rename = "totalComments", deserialize_with="num_correct_deserializer")]
         pub total_comments: u64,
     }
 
@@ -730,9 +708,9 @@ pub mod responses {
         pub is_liked: bool,
         #[serde(rename = "isTop")]
         pub is_top: bool,
-        #[serde(rename = "likesCount")]
+        #[serde(rename = "likesCount", deserialize_with="num_correct_deserializer")]
         pub likes_count: u64,
-        #[serde(rename = "totalComments")]
+        #[serde(rename = "totalComments", deserialize_with="num_correct_deserializer")]
         pub total_comments: u64,
     }
 
@@ -754,9 +732,9 @@ pub mod responses {
         pub is_liked: bool,
         #[serde(rename = "isTop")]
         pub is_top: bool,
-        #[serde(rename = "likesCount")]
+        #[serde(rename = "likesCount", deserialize_with="num_correct_deserializer")]
         pub likes_count: u64,
-        #[serde(rename = "totalComments")]
+        #[serde(rename = "totalComments", deserialize_with="num_correct_deserializer")]
         pub total_comments: u64,
     }
 
@@ -771,7 +749,7 @@ pub mod responses {
 
     #[derive(Debug, Deserialize)]
     pub struct Announcements {
-        announcements: CorrectPageDocs<Announcement>,
+        announcements: Docs<Announcement>,
         /*
         #[serde(skip)]
         pub(crate) client: Option<Arc<Api>>,
@@ -781,7 +759,7 @@ pub mod responses {
     }
 
     impl Deref for Announcements {
-        type Target = CorrectPageDocs<Announcement>;
+        type Target = Docs<Announcement>;
         fn deref(&self) -> &Self::Target {
             &self.announcements
         }
@@ -820,6 +798,7 @@ pub mod responses {
 
     #[derive(Debug, Deserialize)]
     pub struct GameDownloadResponse {
+        #[serde(deserialize_with="num_correct_deserializer")]
         pub code: u64,
         pub title: String,
         pub description: String,

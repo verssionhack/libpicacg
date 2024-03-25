@@ -20,11 +20,25 @@ use crate::{
     r#trait::{Adapt, Pagible},
     r#type::app,
     responses::{
-        Announcements, Comments, CorrectPageDocs, Docs, Favourites, GameChildrenComment,
+        Announcements, Comments, Docs, Favourites, GameChildrenComment,
         GameComment, GameDownloadInfo, Games, Pages, PictureDownloadResounce, Search, GameDownloadInfoP2p, GameDownloadInfoDrive, GameDownloadInfoS3,
     },
     Header, Quality, Response, Sort,
 };
+
+pub fn num_correct_deserializer<'de, D>(de: D) -> Result<u64, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let v = Value::deserialize(de)?;
+    Ok(
+        if v.is_string() {
+            v.as_str().unwrap().parse().unwrap()
+        } else {
+            v.as_u64().unwrap()
+        }
+        )
+}
 
 pub fn game_download_info_deserializer<'de, D>(de: D) -> Result<GameDownloadInfo, D::Error>
 where
@@ -333,23 +347,6 @@ impl<T> Pagible for Docs<T> {
     }
 }
 
-impl<T> Pagible for CorrectPageDocs<T> {
-    fn total(&self) -> u64 {
-        self.total
-    }
-
-    fn current(&self) -> u64 {
-        self.page
-    }
-
-    fn has_next(&self) -> bool {
-        self.page < self.pages
-    }
-
-    fn has_prev(&self) -> bool {
-        self.page > 1
-    }
-}
 
 /*
 impl_pagible!(Favourites);
