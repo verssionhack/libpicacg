@@ -6,7 +6,7 @@ use reqwest::{Proxy, RequestBuilder, ClientBuilder, Client, dns::Resolving};
 use serde::{de::DeserializeOwned};
 use std::sync::RwLock;
 
-use crate::{api_type::Api, nonce, Header, error::Error, api, Response, responses::{self, ComicMetadata, Comics, PunchIn, Profile, Keywords, Categories, RecommendPicLike, Comments, Eps, Pages, Search, Games, GameInfo, ComicComment, GameComment, Announcements, Favourites}, ApiResult, Sort, Parmas};
+use crate::{api_type::Api, nonce, Header, error::Error, api::{self, game}, Response, responses::{self, ComicMetadata, Comics, PunchIn, Profile, Keywords, Categories, RecommendPicLike, Comments, Eps, Pages, Search, Games, GameInfo, ComicComment, GameComment, Announcements, Favourites, GameDownloadResponse}, ApiResult, Sort, Parmas};
 
 
 impl Debug for Api {
@@ -166,6 +166,14 @@ impl Api {
         ).await
     }
 
+    pub async fn game_download_info_get(&self, url: &str) -> Result<GameDownloadResponse, Error> {
+        let mut game_url = reqwest::Url::parse(url).unwrap();
+        game_url.set_path(&format!("/api/v1{}", game_url.path()));
+        Ok(self.client.read().unwrap().get(game_url)
+            .header("referer", url)
+            .send().await?.json().await?)
+    }
+
     pub async fn punch_in(&self) -> ApiResult<PunchIn> {
         self.send(
             self.post(api::host::DEFAULT, &api::user::PUNCH_IN)
@@ -210,7 +218,7 @@ impl Api {
                     )).send().await?.json().await?)
     }
 
-    pub async fn search(&mut self, keyword: &str, page: u64, sort: Sort) -> ApiResult<Search> {
+    pub async fn search(&self, keyword: &str, page: u64, sort: Sort) -> ApiResult<Search> {
         let mut payload = HashMap::new();
         payload.insert("keyword", keyword);
         payload.insert("sort", sort.as_str());
@@ -225,6 +233,7 @@ impl Api {
             .json(&payload)
         ).await
     }
+
 
     pub fn get(&self, host: &str, uri: &str) -> RequestBuilder {
         self.client.read().unwrap().get(format!("{}{}", host, uri))

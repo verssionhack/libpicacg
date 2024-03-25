@@ -1,9 +1,3 @@
-
-
-
-
-
-
 pub trait Adapt {
     fn adapt<const N: usize>(&self) -> [u8; N]
     where

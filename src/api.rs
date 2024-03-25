@@ -16,7 +16,7 @@ pub mod user {
     pub const FAVOURITES: &'static str = "/users/favourite?page=:page&s=:sort";
     // @method: get
     // @params page: number
-    // @params s: Sort 
+    // @params s: Sort
     pub const COMMENTS: &'static str = "/users/my-comments?page=:page";
     // @method: get
     // @params page: number
@@ -48,7 +48,7 @@ pub mod comic {
     pub const SEARCH: &'static str = "/comics/advanced-search?page=:page&s=:sort";
     // @method: post
     // @post-params keyword: str
-    // @post-params sort: Sort 
+    // @post-params sort: Sort
     // @params page: number
     // @params s: Sort
 }

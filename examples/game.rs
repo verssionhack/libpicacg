@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
 use hex::ToHex;
-use libpicacg::{api::{Auth, Host}, App, nonce, Header, Response, Responses, Client, Sort};
+use libpicacg::{api::{auth, host}, app, nonce, Header, Response, responses, Sort};
+use reqwest::Client;
 use serde::Deserialize;
 
 #[tokio::main]

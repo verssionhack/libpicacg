@@ -1,78 +1,128 @@
-use std::{time, fmt::Debug};
+use std::{
+    ffi::{OsStr, OsString},
+    fmt::Debug,
+    str::FromStr,
+    time,
+};
 
+use chrono::NaiveDateTime;
 use hex::ToHex;
 use hmac::{digest::InvalidLength, Hmac, Mac};
 use rand::Rng;
 use reqwest::header::HeaderMap;
 
+use serde::{Deserialize, Deserializer, Serializer};
+use serde_json::Value;
 use sha2::Sha256;
 
-use crate::{api, r#trait::{Adapt, Pagible}, r#type::app, Header, header_name, Quality, Sort, Response, responses::{PictureDownloadResounce, Favourites, Search, Comments, GameComment, GameChildrenComment, Pages, Games, Announcements, Docs, CorrectPageDocs}};
+use crate::{
+    api, header_name,
+    r#trait::{Adapt, Pagible},
+    r#type::app,
+    responses::{
+        Announcements, Comments, CorrectPageDocs, Docs, Favourites, GameChildrenComment,
+        GameComment, GameDownloadInfo, Games, Pages, PictureDownloadResounce, Search, GameDownloadInfoP2p, GameDownloadInfoDrive, GameDownloadInfoS3,
+    },
+    Header, Quality, Response, Sort,
+};
 
+pub fn game_download_info_deserializer<'de, D>(de: D) -> Result<GameDownloadInfo, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let v = Value::deserialize(de)?;
+    Ok(GameDownloadInfo {
+        node: v
+            .as_object()
+            .unwrap()
+            .get("node")
+            .unwrap()
+            .as_object()
+            .unwrap()
+            .values().map(|v| v.as_str().unwrap().to_string()).collect(),
+        p2p: GameDownloadInfoP2p::deserialize(v.as_object().unwrap().get("p2p").unwrap()).unwrap(),
+        drive: GameDownloadInfoDrive::deserialize(v.as_object().unwrap().get("drive").unwrap()).unwrap(),
+        s3: GameDownloadInfoS3::deserialize(v.as_object().unwrap().get("s3").unwrap()).unwrap(),
+    })
+}
+
+pub fn datetime_deserializer<'de, D>(de: D) -> Result<NaiveDateTime, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s = String::deserialize(de)?;
+    Ok(NaiveDateTime::parse_from_str(s.as_str(), "%Y-%m-%dT%H:%M:%S%z").unwrap())
+}
+
+pub fn datetime_serializer<S>(datetime: &NaiveDateTime, se: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let s = datetime.format("%Y-%m-%dT%H:%M:%S%z").to_string();
+    se.collect_str(s.as_str())
+}
 
 macro_rules! impl_pagible {
     ($target: ty) => {
-            impl Pagible for $target {
-                fn total(&self) -> u64 {
-                    self.total
-                }
-
-                fn current(&self) -> u64 {
-                    self.page
-                }
-
-                fn has_next(&self) -> bool {
-                    self.page < self.total()
-                }
-
-                fn has_prev(&self) -> bool {
-                    self.page == 1
-                }
-
-                /*
-                async fn next_page(self) -> Option<ApiResult<Self>> {
-                    if self.has_next() {
-                        if let Some(params) = &self.params {
-                            if let Some(client) = &self.client {
-                                let mut uri = params.uri.to_string();
-                                for (key, value) in params.iter() {
-                                    if key == "page" {
-                                        uri = uri.replace(key, &(self.current() + 1).to_string());
-                                    } else {
-                                        uri = uri.replace(key, value);
-                                    }
-                                }
-                                return Some(client.send(client.get(params.host, &uri)).await);
-                            }
-                        }
-                    }
-                    None
-                }
-
-                async fn prev_page(self) -> Option<ApiResult<Self>> {
-                    if self.has_prev() {
-                        if let Some(params) = &self.params {
-                            if let Some(client) = &self.client {
-                                let mut uri = params.uri.to_string();
-                                for (key, value) in params.iter() {
-                                    if key == "page" {
-                                        uri = uri.replace(key, &(self.current() - 1).to_string());
-                                    } else {
-                                        uri = uri.replace(key, value);
-                                    }
-                                }
-                                return Some(client.send(client.get(params.host, &uri)).await);
-                            }
-                        }
-                    }
-                    None
-                }
-                */
+        impl Pagible for $target {
+            fn total(&self) -> u64 {
+                self.total
             }
-        
+
+            fn current(&self) -> u64 {
+                self.page
+            }
+
+            fn has_next(&self) -> bool {
+                self.page < self.total()
+            }
+
+            fn has_prev(&self) -> bool {
+                self.page == 1
+            }
+
+            /*
+            async fn next_page(self) -> Option<ApiResult<Self>> {
+                if self.has_next() {
+                    if let Some(params) = &self.params {
+                        if let Some(client) = &self.client {
+                            let mut uri = params.uri.to_string();
+                            for (key, value) in params.iter() {
+                                if key == "page" {
+                                    uri = uri.replace(key, &(self.current() + 1).to_string());
+                                } else {
+                                    uri = uri.replace(key, value);
+                                }
+                            }
+                            return Some(client.send(client.get(params.host, &uri)).await);
+                        }
+                    }
+                }
+                None
+            }
+
+            async fn prev_page(self) -> Option<ApiResult<Self>> {
+                if self.has_prev() {
+                    if let Some(params) = &self.params {
+                        if let Some(client) = &self.client {
+                            let mut uri = params.uri.to_string();
+                            for (key, value) in params.iter() {
+                                if key == "page" {
+                                    uri = uri.replace(key, &(self.current() - 1).to_string());
+                                } else {
+                                    uri = uri.replace(key, value);
+                                }
+                            }
+                            return Some(client.send(client.get(params.host, &uri)).await);
+                        }
+                    }
+                }
+                None
+            }
+            */
+        }
     };
 }
-
 
 impl Sort {
     pub fn as_str(&self) -> &str {
@@ -85,6 +135,19 @@ impl Sort {
     }
 }
 
+impl FromStr for Sort {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s.to_ascii_lowercase().as_str() {
+            "descbydate" | "dd" => Self::DescByDate,
+            "ascbydate" | "da" => Self::AscByDate,
+            "maxlike" | "ld" => Self::MaxLike,
+            "maxsearch" | "vd" => Self::MaxSearch,
+            _ => Err(())?,
+        })
+    }
+}
+
 impl ToString for Sort {
     fn to_string(&self) -> String {
         match self {
@@ -92,13 +155,12 @@ impl ToString for Sort {
             Self::AscByDate => "da",
             Self::MaxLike => "ld",
             Self::MaxSearch => "vd",
-        }.to_owned()
+        }
+        .to_owned()
     }
 }
 
-
 type HmacSha256 = Hmac<Sha256>;
-
 
 fn hmac_sha256(data: &[u8], key: &[u8]) -> Result<[u8; 32], InvalidLength> {
     let mut hmac_digest = HmacSha256::new_from_slice(key)?;
@@ -174,14 +236,20 @@ impl Into<HeaderMap> for Header<'_> {
         map.insert(header_name::APP_UUID, self.app_uuid.parse().unwrap());
         map.insert(header_name::API_KEY, self.api_key.parse().unwrap());
         map.insert(header_name::APP_CHANNEL, self.app_channel.parse().unwrap());
-        map.insert(header_name::APP_PLATFORM, self.app_platform.parse().unwrap());
+        map.insert(
+            header_name::APP_PLATFORM,
+            self.app_platform.parse().unwrap(),
+        );
         map.insert(header_name::ACCEPT, self.accept.parse().unwrap());
         map.insert(
             header_name::NONCE,
             self.nonce.to_lowercase().parse().unwrap(),
         );
         map.insert(header_name::TIME, self.time.parse().unwrap());
-        map.insert(header_name::CONTENT_TYPE, self.content_type.parse().unwrap());
+        map.insert(
+            header_name::CONTENT_TYPE,
+            self.content_type.parse().unwrap(),
+        );
         map.insert(
             header_name::SIGNATURE,
             self.signature.to_lowercase().parse().unwrap(),
@@ -241,7 +309,9 @@ impl PictureDownloadResounce {
     }
 
     pub fn download_url(&self) -> reqwest::Url {
-        format!("{}/static/{}", self.server(), self.resource_path()).parse().unwrap()
+        format!("{}/static/{}", self.server(), self.resource_path())
+            .parse()
+            .unwrap()
     }
 }
 
@@ -253,7 +323,6 @@ impl<T> Pagible for Docs<T> {
     fn current(&self) -> u64 {
         self.page
     }
-
 
     fn has_next(&self) -> bool {
         self.page < self.pages

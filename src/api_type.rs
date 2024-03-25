@@ -1,4 +1,7 @@
-use std::{ops::{Deref, DerefMut}, sync::Arc};
+use std::{
+    ops::{Deref, DerefMut},
+    sync::Arc,
+};
 
 use reqwest::Proxy;
 use std::sync::RwLock;

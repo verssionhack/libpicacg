@@ -1,15 +1,16 @@
 use std::fmt::Debug;
 
+use serde::Deserialize;
 
-use serde::{Deserialize};
-
-use std::{ops::{Deref, DerefMut, self}};
+use std::ops::{self, Deref, DerefMut};
 
 //pub type ApiResult<T> = Result<Response<T>, Error>;
 pub type ApiResult<T> = Result<T, Error>;
 
 pub use crate::api_type::*;
 use crate::error::Error;
+
+use crate::r#impl::game_download_info_deserializer;
 
 pub mod app {
     pub const VERSION: &'static str = "2.2.1.3.3.4";
@@ -88,7 +89,6 @@ pub enum Sort {
     MaxSearch,
 }
 
-
 #[derive(Debug, Deserialize)]
 pub struct Response<T: Debug> {
     pub code: u64,
@@ -98,27 +98,19 @@ pub struct Response<T: Debug> {
     pub(super) data: Option<T>,
 }
 
-
-
-
-
 pub mod responses {
-
-    
 
     use serde::Deserializer;
     use size_utils::Size;
-
-    
 
     use super::*;
 
     #[derive(Debug, Deserialize)]
     pub struct PictureDownloadResounce {
-        #[serde(rename="originalName")]
+        #[serde(rename = "originalName")]
         pub(crate) original_name: String,
         pub(crate) path: String,
-        #[serde(rename="fileServer")]
+        #[serde(rename = "fileServer")]
         pub(crate) file_server: String,
     }
 
@@ -147,14 +139,14 @@ pub mod responses {
 
     #[derive(Debug, Deserialize)]
     pub struct _PunchIn {
-        #[serde(rename="punchInLastDay")]
+        #[serde(rename = "punchInLastDay")]
         pub punch_in_last_day: String,
         pub status: String,
     }
 
     #[derive(Debug, Deserialize)]
     pub struct Creator {
-        #[serde(rename="_id")]
+        #[serde(rename = "_id")]
         pub id: String,
         pub avatar: Option<PictureDownloadResounce>,
         pub character: Option<String>,
@@ -170,7 +162,6 @@ pub mod responses {
         pub title: String,
         #[serde(default)]
         pub verified: bool,
-
     }
 
     #[derive(Debug, Deserialize)]
@@ -195,25 +186,25 @@ pub mod responses {
     pub struct _ComicMetadata {
         #[serde(flatten)]
         pub metadata: Comic,
-        #[serde(rename="_creator")]
+        #[serde(rename = "_creator")]
         pub creator: Creator,
         pub description: Option<String>,
         pub tags: Vec<String>,
-        #[serde(rename="chineseTeam")]
+        #[serde(rename = "chineseTeam")]
         pub chinese_team: Option<String>,
         pub updated_at: String,
         pub created_at: String,
-        #[serde(rename="allowDownload")]
+        #[serde(rename = "allowDownload")]
         pub allow_download: bool,
-        #[serde(rename="allowComment")]
+        #[serde(rename = "allowComment")]
         pub allow_comment: bool,
-        #[serde(rename="isFavourite")]
+        #[serde(rename = "isFavourite")]
         pub is_favourite: bool,
-        #[serde(rename="isLiked")]
+        #[serde(rename = "isLiked")]
         pub is_liked: bool,
-        #[serde(rename="likesCount", default)]
+        #[serde(rename = "likesCount", default)]
         pub likes_count: u64,
-        #[serde(rename="totalComments", default)]
+        #[serde(rename = "totalComments", default)]
         pub total_comments: u64,
     }
 
@@ -243,7 +234,7 @@ pub mod responses {
 
     #[derive(Debug, Deserialize)]
     pub struct Comics {
-        comics: Vec<Comic>
+        comics: Vec<Comic>,
     }
 
     impl Deref for Comics {
@@ -270,7 +261,6 @@ pub mod responses {
         */
     }
 
-
     impl Deref for Search {
         type Target = Docs<SearchRow>;
         fn deref(&self) -> &Self::Target {
@@ -288,7 +278,7 @@ pub mod responses {
     pub struct SearchRow {
         #[serde(flatten)]
         comic: Comic,
-        #[serde(rename="chineseTeam")]
+        #[serde(rename = "chineseTeam")]
         pub chinese_team: Option<String>,
         pub created_at: String,
         pub updated_at: String,
@@ -311,33 +301,33 @@ pub mod responses {
 
     #[derive(Debug, Deserialize)]
     pub struct Comic {
-        #[serde(rename="_id")]
+        #[serde(rename = "_id")]
         pub id: String,
         pub author: String,
         pub categories: Vec<String>,
         pub title: String,
-        #[serde(rename="totalViews", default)]
+        #[serde(rename = "totalViews", default)]
         pub total_views: u64,
-        #[serde(rename="totalLikes", default)]
+        #[serde(rename = "totalLikes", default)]
         pub total_likes: u64,
-        #[serde(rename="likesCount", default)]
+        #[serde(rename = "likesCount", default)]
         pub likes_count: u64,
-        #[serde(rename="pagesCount", default)]
+        #[serde(rename = "pagesCount", default)]
         pub pages_count: u64,
-        #[serde(rename="epsCount", default)]
+        #[serde(rename = "epsCount", default)]
         pub eps_count: u64,
         #[serde(default)]
         pub finished: bool,
         pub thumb: PictureDownloadResounce,
-        #[serde(rename="viewsCount", default)]
+        #[serde(rename = "viewsCount", default)]
         pub views_count: u64,
-        #[serde(rename="leaderboardCount", default)]
-       pub leader_board_count: u64
+        #[serde(rename = "leaderboardCount", default)]
+        pub leader_board_count: u64,
     }
 
     #[derive(Debug, Deserialize)]
     pub struct Profile {
-        user: _Profile
+        user: _Profile,
     }
 
     impl Deref for Profile {
@@ -355,7 +345,7 @@ pub mod responses {
 
     #[derive(Debug, Deserialize)]
     pub struct _Profile {
-        #[serde(rename="_id")]
+        #[serde(rename = "_id")]
         pub id: String,
         pub birthday: String,
         pub character: String,
@@ -364,19 +354,18 @@ pub mod responses {
         pub email: String,
         pub exp: u64,
         pub gender: String,
-        #[serde(rename="isPunched")]
+        #[serde(rename = "isPunched")]
         pub is_punched: bool,
         pub level: u64,
         pub name: String,
         pub title: String,
         #[serde(default)]
-        pub verified: bool
+        pub verified: bool,
     }
-
 
     #[derive(Debug, Deserialize)]
     pub struct Keywords {
-        keywords: Vec<String>
+        keywords: Vec<String>,
     }
 
     impl Deref for Keywords {
@@ -394,16 +383,16 @@ pub mod responses {
 
     #[derive(Debug, Deserialize)]
     pub struct Categories {
-        categories: Vec<Categorie>
+        categories: Vec<Categorie>,
     }
 
     #[derive(Debug, Deserialize)]
     pub struct Categorie {
-        #[serde(rename="_id")]
+        #[serde(rename = "_id")]
         pub id: Option<String>,
         #[serde(default)]
         pub active: bool,
-        #[serde(rename="isWeb", default)]
+        #[serde(rename = "isWeb", default)]
         pub is_web: bool,
         pub link: Option<String>,
         pub description: Option<String>,
@@ -433,7 +422,7 @@ pub mod responses {
 
     #[derive(Debug, Deserialize)]
     pub struct Ep {
-        #[serde(rename="_id")]
+        #[serde(rename = "_id")]
         pub id: String,
         pub order: Option<u64>,
         pub title: String,
@@ -485,11 +474,11 @@ pub mod responses {
             &mut self.docs
         }
     }
-    
+
     #[derive(Debug, Deserialize)]
     pub struct Comments<T> {
         comments: CorrectPageDocs<T>,
-        #[serde(rename="topComments")]
+        #[serde(rename = "topComments")]
         pub top_comments: Option<Vec<T>>,
         /*
         #[serde(skip)]
@@ -523,7 +512,7 @@ pub mod responses {
     pub struct CorrectPageDocs<T> {
         docs: Vec<T>,
         pub limit: u64,
-        #[serde(deserialize_with="correct_page")]
+        #[serde(deserialize_with = "correct_page")]
         pub page: u64,
         pub pages: u64,
         pub total: u64,
@@ -542,34 +531,33 @@ pub mod responses {
         }
     }
 
-
     #[derive(Debug, Deserialize)]
     pub struct ComicComment {
-        #[serde(rename="_comic")]
+        #[serde(rename = "_comic")]
         pub comic: String,
-        #[serde(rename="_id")]
+        #[serde(rename = "_id")]
         pub id: String,
-        #[serde(rename="_user")]
+        #[serde(rename = "_user")]
         pub user: Creator,
-        #[serde(rename="commentsCount")]
+        #[serde(rename = "commentsCount")]
         pub comments_count: u64,
         #[serde(default)]
         pub content: String,
         pub created_at: String,
         pub hide: bool,
-        #[serde(rename="isLiked")]
+        #[serde(rename = "isLiked")]
         pub is_liked: bool,
-        #[serde(rename="isTop")]
+        #[serde(rename = "isTop")]
         pub is_top: bool,
-        #[serde(rename="likesCount")]
+        #[serde(rename = "likesCount")]
         pub likes_count: u64,
-        #[serde(rename="totalComments")]
+        #[serde(rename = "totalComments")]
         pub total_comments: u64,
     }
 
     #[derive(Debug, Deserialize)]
     pub struct Page {
-        #[serde(rename="_id")]
+        #[serde(rename = "_id")]
         pub id: String,
         pub media: PictureDownloadResounce,
     }
@@ -625,7 +613,7 @@ pub mod responses {
 
     #[derive(Debug, Deserialize)]
     pub struct Game {
-        #[serde(rename="_id")]
+        #[serde(rename = "_id")]
         pub id: String,
         #[serde(default)]
         pub adult: bool,
@@ -645,7 +633,7 @@ pub mod responses {
     pub struct GameInfo {
         game: _GameInfo,
     }
-    
+
     impl Deref for GameInfo {
         type Target = _GameInfo;
         fn deref(&self) -> &Self::Target {
@@ -663,27 +651,27 @@ pub mod responses {
     pub struct _GameInfo {
         #[serde(flatten)]
         game: Game,
-        #[serde(rename="androidLinks")]
+        #[serde(rename = "androidLinks")]
         pub android_links: Vec<String>,
-        #[serde(rename="androidSize")]
+        #[serde(rename = "androidSize")]
         pub android_size: Size,
-        #[serde(rename="iosLinks")]
+        #[serde(rename = "iosLinks")]
         pub ios_links: Vec<String>,
-        #[serde(rename="iosSize")]
+        #[serde(rename = "iosSize")]
         pub ios_size: Size,
-        #[serde(rename="commentsCount")]
+        #[serde(rename = "commentsCount")]
         pub comments_count: u64,
         pub created_at: String,
         pub description: Option<String>,
-        #[serde(rename="downloadsCount")]
+        #[serde(rename = "downloadsCount")]
         pub downloads_count: u64,
-        #[serde(rename="isLiked")]
+        #[serde(rename = "isLiked")]
         pub is_liked: bool,
-        #[serde(rename="likesCount")]
+        #[serde(rename = "likesCount")]
         pub likes_count: u64,
         pub screenshots: Vec<PictureDownloadResounce>,
         pub updated_at: String,
-        #[serde(rename="videoLink")]
+        #[serde(rename = "videoLink")]
         pub video_link: String,
     }
 
@@ -702,79 +690,79 @@ pub mod responses {
 
     #[derive(Debug, Deserialize)]
     pub struct GameComment {
-        #[serde(rename="_game")]
+        #[serde(rename = "_game")]
         pub game: String,
-        #[serde(rename="_id")]
+        #[serde(rename = "_id")]
         pub id: String,
-        #[serde(rename="_user")]
+        #[serde(rename = "_user")]
         pub user: Creator,
-        #[serde(rename="commentsCount")]
+        #[serde(rename = "commentsCount")]
         pub comments_count: u64,
         pub content: String,
         pub created_at: String,
         #[serde(default)]
         pub hide: bool,
-        #[serde(rename="isLiked")]
+        #[serde(rename = "isLiked")]
         pub is_liked: bool,
-        #[serde(rename="isTop")]
+        #[serde(rename = "isTop")]
         pub is_top: bool,
-        #[serde(rename="likesCount")]
+        #[serde(rename = "likesCount")]
         pub likes_count: u64,
-        #[serde(rename="totalComments")]
+        #[serde(rename = "totalComments")]
         pub total_comments: u64,
     }
 
     #[derive(Debug, Deserialize)]
     pub struct GameChildrenComment {
-        #[serde(rename="_game")]
+        #[serde(rename = "_game")]
         pub game: String,
-        #[serde(rename="_id")]
+        #[serde(rename = "_id")]
         pub id: String,
-        #[serde(rename="_parent")]
+        #[serde(rename = "_parent")]
         pub parent: String,
-        #[serde(rename="_user")]
+        #[serde(rename = "_user")]
         pub user: Creator,
         pub content: String,
         pub created_at: String,
         #[serde(default)]
         pub hide: bool,
-        #[serde(rename="isLiked")]
+        #[serde(rename = "isLiked")]
         pub is_liked: bool,
-        #[serde(rename="isTop")]
+        #[serde(rename = "isTop")]
         pub is_top: bool,
-        #[serde(rename="likesCount")]
+        #[serde(rename = "likesCount")]
         pub likes_count: u64,
-        #[serde(rename="totalComments")]
+        #[serde(rename = "totalComments")]
         pub total_comments: u64,
     }
 
     #[derive(Debug, Deserialize)]
     pub struct ComicChildrenComment {
-        #[serde(rename="_comic")]
+        #[serde(rename = "_comic")]
         pub comic: String,
-        #[serde(rename="_id")]
+        #[serde(rename = "_id")]
         pub id: String,
-        #[serde(rename="_parent")]
+        #[serde(rename = "_parent")]
         pub parent: String,
-        #[serde(rename="_user")]
+        #[serde(rename = "_user")]
         pub user: Creator,
         pub content: String,
         pub created_at: String,
         #[serde(default)]
         pub hide: bool,
-        #[serde(rename="isLiked")]
+        #[serde(rename = "isLiked")]
         pub is_liked: bool,
-        #[serde(rename="isTop")]
+        #[serde(rename = "isTop")]
         pub is_top: bool,
-        #[serde(rename="likesCount")]
+        #[serde(rename = "likesCount")]
         pub likes_count: u64,
-        #[serde(rename="totalComments")]
+        #[serde(rename = "totalComments")]
         pub total_comments: u64,
     }
 
     #[derive(Debug, Deserialize)]
     pub struct Announcement {
-        #[serde(rename="_id")]
+        #[serde(rename = "_id")]
         pub id: String,
         pub content: String,
         pub thumb: PictureDownloadResounce,
@@ -805,4 +793,37 @@ pub mod responses {
         }
     }
 
+    #[derive(Debug, Deserialize)]
+    pub struct GameDownloadInfoP2p {
+        pub bt: String,
+    }
+
+    #[derive(Debug, Deserialize)]
+    pub struct GameDownloadInfoDrive {
+        pub onedrive: String,
+    }
+
+    #[derive(Debug, Deserialize)]
+    pub struct GameDownloadInfoS3 {
+        pub sg: String,
+        pub sg2: String,
+        pub us: String,
+    }
+
+    #[derive(Debug)]
+    pub struct GameDownloadInfo {
+        pub node: Vec<String>,
+        pub p2p: GameDownloadInfoP2p,
+        pub drive: GameDownloadInfoDrive,
+        pub s3: GameDownloadInfoS3,
+    }
+
+    #[derive(Debug, Deserialize)]
+    pub struct GameDownloadResponse {
+        pub code: u64,
+        pub title: String,
+        pub description: String,
+        #[serde(deserialize_with="game_download_info_deserializer")]
+        pub download: GameDownloadInfo,
+    }
 }
