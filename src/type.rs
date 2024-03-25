@@ -2,12 +2,12 @@ use std::fmt::Debug;
 
 use serde::Deserialize;
 
-use std::ops::{self, Deref, DerefMut};
+use std::ops::{Deref, DerefMut};
 
 //pub type ApiResult<T> = Result<Response<T>, Error>;
 pub type ApiResult<T> = Result<T, Error>;
 
-pub use crate::api_type::*;
+
 use crate::error::Error;
 
 use crate::r#impl::{game_download_info_deserializer, num_correct_deserializer};
@@ -101,8 +101,8 @@ pub struct Response<T: Debug> {
 
 pub mod responses {
 
-    use serde::Deserializer;
-    use size_utils::Size;
+    
+    
 
     use super::*;
 

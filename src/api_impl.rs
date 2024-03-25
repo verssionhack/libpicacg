@@ -1,12 +1,12 @@
 use std::{collections::HashMap, fmt::Debug, sync::Arc};
 
-use reqwest::{Proxy, RequestBuilder, ClientBuilder, Client, dns::Resolving};
+use reqwest::{Proxy, RequestBuilder, ClientBuilder, Client};
 
 
 use serde::{de::DeserializeOwned};
 use std::sync::RwLock;
 
-use crate::{api_type::Api, nonce, Header, error::Error, api::{self, game}, Response, responses::{self, ComicMetadata, Comics, PunchIn, Profile, Keywords, Categories, RecommendPicLike, Comments, Eps, Pages, Search, Games, GameInfo, ComicComment, GameComment, Announcements, Favourites, GameDownloadResponse}, ApiResult, Sort, Parmas};
+use crate::{api_type::Api, nonce, Header, error::Error, api::{self}, Response, responses::{self, ComicMetadata, Comics, PunchIn, Profile, Keywords, Categories, RecommendPicLike, Comments, Eps, Pages, Search, Games, GameInfo, ComicComment, GameComment, Announcements, Favourites, GameDownloadResponse}, ApiResult, Sort, Parmas};
 
 
 impl Debug for Api {
