@@ -1,6 +1,6 @@
 use std::{
     ops::{Deref, DerefMut},
-    sync::Arc,
+    sync::Arc, time::Duration,
 };
 
 use reqwest::Proxy;
@@ -10,6 +10,7 @@ pub struct Api {
     pub(super) nonce: String,
     pub(super) token: Option<String>,
     pub(super) proxy: Option<Proxy>,
+    pub(super) timeout: Option<Duration>,
     pub(super) client: Arc<RwLock<reqwest::Client>>,
     pub(super) email: Option<String>,
     pub(super) password: Option<String>,

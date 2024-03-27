@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Debug, sync::Arc};
+use std::{collections::HashMap, fmt::Debug, sync::Arc, time::Duration};
 
 use reqwest::{Proxy, RequestBuilder, ClientBuilder, Client};
 
@@ -34,16 +34,36 @@ impl Api {
         }
     }
 
-    pub fn set_proxy(&mut self, proxy: Option<Proxy>) -> Result<(), Error> {
-        if let Some(v) = proxy.as_ref() {
-            self.client = Arc::new(RwLock::new(ClientBuilder::new().proxy(v.clone()).build()?));
+    fn reset_client(&mut self) -> Result<(), Error> {
+        let mut client_builder = ClientBuilder::new();
+        if let Some(v) = self.proxy.as_ref() {
+            client_builder = client_builder.proxy(v.clone());
         }
+        if let Some(v) = self.timeout.as_ref() {
+            client_builder = client_builder.timeout(v.clone());
+        }
+        *self.client.write().unwrap() = client_builder.build()?;
+        Ok(())
+    }
+
+    pub fn set_proxy(&mut self, proxy: Option<Proxy>) -> Result<(), Error> {
         self.proxy = proxy;
+        self.reset_client()?;
+        Ok(())
+    }
+
+    pub fn set_timeout(&mut self, timeout: Option<Duration>) -> Result<(), Error> {
+        self.timeout = timeout;
+        self.reset_client()?;
         Ok(())
     }
 
     pub fn proxy(&self) -> Option<&Proxy> {
         self.proxy.as_ref()
+    }
+
+    pub fn timeout(&self) -> Option<&Duration> {
+        self.timeout.as_ref()
     }
     
     pub fn header(&self, method: &str, uri: &str) -> Header<'_> {
