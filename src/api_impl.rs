@@ -29,6 +29,7 @@ impl Api {
             nonce,
             token: None,
             proxy: None,
+            timeout: None,
             email: None,
             password: None,
         }
