@@ -266,6 +266,11 @@ impl Api {
             .headers(self.header("post", uri).into())
     }
 
+    pub fn head(&self, host: &str, uri: &str) -> RequestBuilder {
+        self.client.read().unwrap().head(format!("{}{}", host, uri))
+            .headers(self.header("head", uri).into())
+    }
+
 
     /*
     pub async fn send<T: Debug + DeserializeOwned>(&self, builder: RequestBuilder) -> ApiResult<T> {
