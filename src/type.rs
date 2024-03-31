@@ -632,11 +632,11 @@ pub mod responses {
         #[serde(rename = "androidLinks")]
         pub android_links: Vec<String>,
         #[serde(rename = "androidSize")]
-        pub android_size: u64,
+        pub android_size: f64,
         #[serde(rename = "iosLinks")]
         pub ios_links: Vec<String>,
         #[serde(rename = "iosSize")]
-        pub ios_size: u64,
+        pub ios_size: f64,
         #[serde(rename = "commentsCount", deserialize_with="num_correct_deserializer")]
         pub comments_count: u64,
         pub created_at: String,
