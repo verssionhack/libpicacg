@@ -272,7 +272,7 @@ impl Api {
     }
 
 
-    #[cfg(debug)]
+    #[cfg(feature="debug")]
     pub async fn send<T: Debug + DeserializeOwned>(&self, builder: RequestBuilder) -> ApiResult<T> {
         let req =  builder.build().unwrap();
         //println!("Request {}", req.url().as_str());
@@ -292,7 +292,7 @@ impl Api {
     }
 
 
-    #[cfg(release)]
+    #[cfg(not(feature="debug"))]
     pub async fn send<T: Debug + DeserializeOwned>(&self, builder: RequestBuilder) -> ApiResult<T> {
         Ok(builder.send().await?.json::<Response<T>>().await
             .map(|response| {
