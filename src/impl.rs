@@ -223,7 +223,7 @@ impl<'a> Header<'a> {
             .unwrap()
             .as_secs();
         Self {
-            host: &api::host::DEFAULT[8..],
+            host: api::host::DEFAULT.read().unwrap()[8..].to_string(),
             app_uuid: Self::UUID,
             api_key: app::KEY,
             app_channel: app::CHANNEL,

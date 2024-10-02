@@ -83,7 +83,7 @@ impl Api {
         let mut payload = HashMap::new();
         payload.insert("email", email);
         payload.insert("password", password);
-        let res: responses::Auth = self.send(self.post(api::host::DEFAULT, api::auth::LOGIN)
+        let res: responses::Auth = self.send(self.post(&api::host::DEFAULT.read().unwrap(), api::auth::LOGIN)
             .json(&payload)).await?;
         self.token = Some(res.token);
         Ok(())
@@ -91,7 +91,7 @@ impl Api {
 
     pub async fn favorites(&self, page: u64, sort: Sort) -> ApiResult<Favourites> {
         self.send(
-            self.get(api::host::DEFAULT, &api::user::FAVOURITES
+            self.get(&api::host::DEFAULT.read().unwrap(), &api::user::FAVOURITES
                 .replace(
                     ":page", &page.to_string()
                 )
@@ -103,20 +103,20 @@ impl Api {
 
     pub async fn comic_ranking(&self) -> ApiResult<Comics> {
         self.send(
-            self.get(api::host::DEFAULT, api::comic::RANKING)
+            self.get(&api::host::DEFAULT.read().unwrap(), api::comic::RANKING)
         ).await
     }
 
     
     pub async fn comic_metadata(&self, cid: &str) -> ApiResult<ComicMetadata> {
         self.send(
-            self.get(api::host::DEFAULT, &api::comic::METADATA.replace(":cid", cid))
+            self.get(&api::host::DEFAULT.read().unwrap(), &api::comic::METADATA.replace(":cid", cid))
         ).await
     }
 
     pub async fn comic_comments(&self, cid: &str, page: u64) -> ApiResult<Comments<ComicComment>> {
         self.send(
-            self.get(api::host::DEFAULT, &api::comic::COMMENTS.replace(":cid", cid)
+            self.get(&api::host::DEFAULT.read().unwrap(), &api::comic::COMMENTS.replace(":cid", cid)
                 .replace(
                     ":page", &page.to_string()
                 ))
@@ -125,13 +125,13 @@ impl Api {
 
     pub async fn comic_recommended(&self, cid: &str) -> ApiResult<Comics> {
         self.send(
-            self.get(api::host::DEFAULT, &api::comic::RECOMMENDED.replace(":cid", cid))
+            self.get(&api::host::DEFAULT.read().unwrap(), &api::comic::RECOMMENDED.replace(":cid", cid))
         ).await
     }
 
     pub async fn comic_eps(&self, cid: &str, page: u64) -> ApiResult<Eps> {
         self.send(
-            self.get(api::host::DEFAULT, &api::comic::EPS.replace(":cid", cid)
+            self.get(&api::host::DEFAULT.read().unwrap(), &api::comic::EPS.replace(":cid", cid)
                 .replace(
                     ":page", &page.to_string()
                 ))
@@ -140,7 +140,7 @@ impl Api {
 
     pub async fn comic_pages(&self, cid: &str, index: u64, page: u64) -> ApiResult<Pages> {
         self.send(
-            self.get(api::host::DEFAULT, &api::comic::PAGES
+            self.get(&api::host::DEFAULT.read().unwrap(), &api::comic::PAGES
                 .replace(":cid", cid)
                 .replace(":index", &index.to_string())
                 .replace(
@@ -151,7 +151,7 @@ impl Api {
 
     pub async fn game_comments(&self, cid: &str, page: u64) -> ApiResult<Comments<GameComment>> {
         self.send(
-            self.get(api::host::DEFAULT, &api::game::COMMENTS
+            self.get(&api::host::DEFAULT.read().unwrap(), &api::game::COMMENTS
                 .replace(":cid", cid)
                 .replace(
                     ":page", &page.to_string()
@@ -163,7 +163,7 @@ impl Api {
     where T: DeserializeOwned + Debug
     {
         self.send(
-            self.get(api::host::DEFAULT, &api::comment::CHILDRENS
+            self.get(&api::host::DEFAULT.read().unwrap(), &api::comment::CHILDRENS
                 .replace(":cid", cid)
                 .replace(
                     ":page", &page.to_string()
@@ -173,7 +173,7 @@ impl Api {
 
     pub async fn games(&self, page: u64) -> ApiResult<Games> {
         self.send(
-            self.get(api::host::DEFAULT, &api::game::GAMES
+            self.get(&api::host::DEFAULT.read().unwrap(), &api::game::GAMES
                 .replace(
                     ":page", &page.to_string()
                 ))
@@ -182,7 +182,7 @@ impl Api {
 
     pub async fn game_info(&self, cid: &str) -> ApiResult<GameInfo> {
         self.send(
-            self.get(api::host::DEFAULT, &api::game::INFO
+            self.get(&api::host::DEFAULT.read().unwrap(), &api::game::INFO
                 .replace(":cid", cid))
         ).await
     }
@@ -197,25 +197,25 @@ impl Api {
 
     pub async fn punch_in(&self) -> ApiResult<PunchIn> {
         self.send(
-            self.post(api::host::DEFAULT, &api::user::PUNCH_IN)
+            self.post(&api::host::DEFAULT.read().unwrap(), &api::user::PUNCH_IN)
         ).await
     }
 
     pub async fn profile(&self) -> ApiResult<Profile> {
         self.send(
-            self.get(api::host::DEFAULT, &api::user::PROFILE)
+            self.get(&api::host::DEFAULT.read().unwrap(), &api::user::PROFILE)
         ).await
     }
 
     pub async fn keywords(&self) -> ApiResult<Keywords> {
         self.send(
-            self.get(api::host::DEFAULT, &api::other::KEYWORDS)
+            self.get(&api::host::DEFAULT.read().unwrap(), &api::other::KEYWORDS)
         ).await
     }
 
     pub async fn announcements(&self, page: u64) -> ApiResult<Announcements> {
         self.send(
-            self.get(api::host::DEFAULT, &api::other::ANNOUNCEMENTS
+            self.get(&api::host::DEFAULT.read().unwrap(), &api::other::ANNOUNCEMENTS
                 .replace(
                     ":page", &page.to_string()
                 ))
@@ -224,12 +224,12 @@ impl Api {
 
     pub async fn categories(&self) -> ApiResult<Categories> {
         self.send(
-            self.get(api::host::DEFAULT, &api::other::CATEGORIES)
+            self.get(&api::host::DEFAULT.read().unwrap(), &api::other::CATEGORIES)
         ).await
     }
 
     pub async fn pic_like_get(&self, cid: &str, page: u64) ->  Result<Vec<RecommendPicLike>, Error> {
-        Ok(self.client.read().unwrap().get(&format!("{}{}", api::host::RECOMMEND, &api::other::PIC_LIKE_GET
+        Ok(self.client.read().unwrap().get(&format!("{}{}", &api::host::RECOMMEND.read().unwrap(), &api::other::PIC_LIKE_GET
                 .replace(
                     ":cid", cid 
                 )
@@ -244,7 +244,7 @@ impl Api {
         payload.insert("keyword", keyword);
         payload.insert("sort", sort.as_str());
         self.send(
-            self.post(api::host::DEFAULT, &api::comic::SEARCH
+            self.post(&api::host::DEFAULT.read().unwrap(), &api::comic::SEARCH
                 .replace(
                     ":page", &page.to_string()
                 )

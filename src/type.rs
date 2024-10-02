@@ -24,7 +24,7 @@ pub mod app {
 
 #[derive(Debug, Clone)]
 pub struct Header<'a> {
-    pub(super) host: &'static str,
+    pub(super) host: String,
     pub(super) app_uuid: &'static str,
     pub(super) api_key: &'static str,
     pub(super) app_channel: &'static str,

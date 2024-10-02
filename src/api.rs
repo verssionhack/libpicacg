@@ -1,8 +1,13 @@
 pub mod host {
-    pub const DEFAULT: &'static str = "https://api.manhuabika.com";
-    //pub const DEFAULT: &'static str = "https://api.go2778.com";
-    pub const RECOMMEND: &'static str = "https://recommend.manhuabika.com";
-    pub const PIC: &'static str = "https://img.picacomic.com";
+    use std::sync::RwLock;
+
+    use lazy_static::lazy_static;
+
+    lazy_static! {
+        pub static ref DEFAULT: RwLock<String> = RwLock::new("https://api.manhuabika.com".to_owned());
+        pub static ref RECOMMEND: RwLock<String> = RwLock::new("https://recommend.manhuabika.com".to_owned());
+        pub static ref PIC: RwLock<String> = RwLock::new("https://img.picacomic.com".to_owned());
+    }
 }
 pub mod auth {
     pub const LOGIN: &'static str = "/auth/sign-in";
