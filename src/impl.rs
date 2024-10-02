@@ -322,9 +322,9 @@ impl PictureDownloadResounce {
     }
 
     pub fn download_url(&self) -> reqwest::Url {
-        //let resource_path = PathBuf::from_str(self.resource_path()).unwrap();
-        //format!("{}/static/{}", self.server(), resource_path.file_name().unwrap().to_str().unwrap())
-        format!("{}/static/{}", self.server(), self.resource_path())
+        let resource_path = PathBuf::from_str(self.resource_path()).unwrap();
+        format!("{}/static/{}", self.server(), resource_path.file_name().unwrap().to_str().unwrap())
+        //format!("{}/static/{}", self.server(), self.resource_path())
             .parse()
             .unwrap()
     }
