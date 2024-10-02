@@ -6,7 +6,8 @@ pub mod host {
     lazy_static! {
         pub static ref DEFAULT: RwLock<String> = RwLock::new("https://api.manhuabika.com".to_owned());
         pub static ref RECOMMEND: RwLock<String> = RwLock::new("https://recommend.manhuabika.com".to_owned());
-        pub static ref PIC: RwLock<String> = RwLock::new("https://img.picacomic.com".to_owned());
+        //pub static ref PIC: RwLock<String> = RwLock::new("https://img.picacomic.com".to_owned());
+        pub static ref PIC: RwLock<Option<String>> = RwLock::new(None);
     }
 }
 pub mod auth {
